@@ -16,6 +16,7 @@ use PhpAccessor\Console\Application;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 #[Listener]
@@ -67,6 +68,7 @@ class AutoGenerateAccessor implements ListenerInterface
     private function genProxyFile()
     {
         $config = $this->container->get(ConfigInterface::class);
+        $this->removeProxies($config->get('php-accessor.proxy_root_directory'));
         $classes = AnnotationCollector::getClassesByAnnotation(HyperfData::class);
         $path = [];
         foreach ($classes as $class => $annotation) {
@@ -82,5 +84,14 @@ class AutoGenerateAccessor implements ListenerInterface
         ]);
         $app = new Application();
         $app->run($input);
+    }
+
+    private function removeProxies($dir)
+    {
+        $filesystem = new Filesystem();
+        $finder = (new Finder())
+            ->files()
+            ->in($dir);
+        $filesystem->remove($finder);
     }
 }
