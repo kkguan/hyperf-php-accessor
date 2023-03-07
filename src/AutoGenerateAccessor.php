@@ -89,9 +89,11 @@ class AutoGenerateAccessor implements ListenerInterface
     private function removeProxies($dir)
     {
         $filesystem = new Filesystem();
-        $finder = (new Finder())
-            ->files()
-            ->in($dir);
+        if (! $filesystem->exists($dir)) {
+            return;
+        }
+
+        $finder = (new Finder())->files()->in($dir);
         $filesystem->remove($finder);
     }
 }

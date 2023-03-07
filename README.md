@@ -29,4 +29,21 @@ class Entity
 ```
 
 
+注意事项
+-----------
+### 单元测试报错
+composer test运行单元测试时可能会出现以下错误信息:
+```console
+Uncaught Swoole\Error: API must be called in the coroutine in ...../vendor/symfony/console/Terminal.php:156
+```
+请把原有`bootstrap.php`文件内以下行明细
+```php
+Swoole\Runtime::enableCoroutine(true);
+```
+替换为
+```php
+Swoole\Runtime::enableCoroutine(SWOOLE_HOOK_ALL^SWOOLE_HOOK_PROC);
+```
+
+
 
