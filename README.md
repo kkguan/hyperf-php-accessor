@@ -8,6 +8,15 @@ composer require free2one/hyperf-php-accessor
 ```console
 php bin/hyperf.php vendor:publish free2one/hyperf-php-accessor
 ```
+项目`composer.json` 文件中配置以下信息信息
+```json
+{
+  "scripts":{
+    "php-accessor": "@php vendor/bin/php-accessor generate"
+  }
+}
+```
+
 
 ### 通过`#[HyperfData]`注解原始类
 除了PHP Accessor原有的注解外,需要额外使用该注解来标识其可被Hyperf<a href="https://hyperf.wiki/3.0/#/zh-cn/annotation?id=%e8%87%aa%e5%ae%9a%e4%b9%89%e6%b3%a8%e8%a7%a3">收集</a>.
@@ -44,6 +53,12 @@ Swoole\Runtime::enableCoroutine(true);
 ```php
 Swoole\Runtime::enableCoroutine(SWOOLE_HOOK_ALL^SWOOLE_HOOK_PROC);
 ```
+
+
+## 相关资源
+
+#### <a href="https://github.com/kkguan/php-accessor">PHP Accessor</a>: 生成类访问器（Getter & Setter）
+#### <a href="https://github.com/kkguan/php-accessor-idea-plugin">PHP Accessor IDEA Plugin</a>: Phpstorm辅助插件,文件保存时自动生成访问器.支持访问器的跳转,代码提示,查找及类字段重构等.
 
 
 

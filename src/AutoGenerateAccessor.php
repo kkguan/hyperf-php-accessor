@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Hyperf\PhpAccessor;
 
+use ArrayIterator;
 use Composer\Autoload\ClassLoader;
 use Hyperf\Contract\ConfigInterface;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Exception\Exception;
 use Hyperf\Event\Annotation\Listener;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\PhpAccessor\Annotation\HyperfData;
-use PhpAccessor\Console\Application;
+use PhpAccessor\Runner;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
-use Symfony\Component\Console\Input\ArrayInput;
+use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -70,20 +72,24 @@ class AutoGenerateAccessor implements ListenerInterface
         $config = $this->container->get(ConfigInterface::class);
         $this->removeProxies($config->get('php-accessor.proxy_root_directory'));
         $classes = AnnotationCollector::getClassesByAnnotation(HyperfData::class);
-        $path = [];
+        $files = [];
         foreach ($classes as $class => $annotation) {
             $ref = new ReflectionClass($class);
-            $path[] = $ref->getFileName();
+            $files[] = new SplFileInfo($ref->getFileName());
         }
-        $input = new ArrayInput([
-            'command' => 'generate',
-            'path' => $path,
-            '--dir' => $config->get('php-accessor.proxy_root_directory'),
-            '--gen-meta' => $config->get('php-accessor.gen_meta'),
-            '--gen-proxy' => $config->get('php-accessor.gen_proxy'),
-        ]);
-        $app = new Application();
-        $app->run($input);
+        $finder = new ArrayIterator($files);
+        $runner = new Runner(
+            finder: $finder,
+            dir: $config->get('php-accessor.proxy_root_directory'),
+            genMeta: $config->get('php-accessor.gen_meta') == 'yes',
+            genProxy: $config->get('php-accessor.gen_proxy') == 'yes',
+        );
+        $runner->generate();
+        $log = $this->container->get(StdoutLoggerInterface::class);
+        foreach ($runner->getGeneratedFiles() as $generatedFile) {
+            $log->info('[php-accessor]: ' . $generatedFile);
+        }
+        exit;
     }
 
     private function removeProxies($dir)
