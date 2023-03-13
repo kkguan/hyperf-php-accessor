@@ -21,7 +21,7 @@ use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
-#[Listener]
+#[Listener(priority: 9999)]
 class AutoGenerateAccessor implements ListenerInterface
 {
     public function __construct(
