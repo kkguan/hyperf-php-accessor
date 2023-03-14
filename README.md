@@ -54,6 +54,24 @@ Swoole\Runtime::enableCoroutine(true);
 Swoole\Runtime::enableCoroutine(SWOOLE_HOOK_ALL^SWOOLE_HOOK_PROC);
 ```
 
+### 跳转 or 查找不生效
+需要确保`APP_ENV`在本地环境的设置为`dev`,否则请自行修改配置文件`php-accessor.php`中的`genMeta`判断.
+
+```php
+<?php
+declare(strict_types=1);
+
+$appEnv = env('APP_ENV', 'dev');
+$genMeta = $appEnv == 'dev' ? 'yes' : 'no';
+
+return [
+    'proxy_root_directory' => BASE_PATH . DIRECTORY_SEPARATOR . '.php-accessor',
+    'gen_meta' => $genMeta,
+    'gen_proxy' => 'yes',
+];
+
+```
+
 
 ## 相关资源
 
