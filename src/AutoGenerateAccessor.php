@@ -16,6 +16,7 @@ use Hyperf\Framework\Event\BootApplication;
 use Hyperf\PhpAccessor\Annotation\HyperfData;
 use PhpAccessor\Runner;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LogLevel;
 use ReflectionClass;
 use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
@@ -86,8 +87,9 @@ class AutoGenerateAccessor implements ListenerInterface
         );
         $runner->generate();
         $log = $this->container->get(StdoutLoggerInterface::class);
+        $logLevel = $config->get('php-accessor.log_level', LogLevel::INFO);
         foreach ($runner->getGeneratedFiles() as $generatedFile) {
-            $log->info('[php-accessor]: ' . $generatedFile);
+            $log->log($logLevel, '[php-accessor]: ' . $generatedFile);
         }
         exit;
     }
