@@ -9,4 +9,5 @@ return [
     'proxy_root_directory' => BASE_PATH . DIRECTORY_SEPARATOR . '.php-accessor',
     'gen_meta' => $genMeta,
     'gen_proxy' => 'yes',
+    'log_level' => \Psr\Log\LogLevel::INFO,
 ];
