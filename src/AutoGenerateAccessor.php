@@ -39,6 +39,11 @@ class AutoGenerateAccessor implements ListenerInterface
 
     public function process(object $event): void
     {
+        $config = $this->container->get(ConfigInterface::class);
+        if (empty($config->get('php-accessor.proxy_root_directory'))) {
+            return;
+        }
+
         $pid = pcntl_fork();
         if ($pid == -1) {
             throw new Exception('The process fork failed');
@@ -46,7 +51,6 @@ class AutoGenerateAccessor implements ListenerInterface
 
         if ($pid) {
             pcntl_wait($status);
-            $config = $this->container->get(ConfigInterface::class);
             $proxyDir = $config->get('php-accessor.proxy_root_directory') . DIRECTORY_SEPARATOR . 'proxy';
             if (! is_dir($proxyDir)) {
                 return;
