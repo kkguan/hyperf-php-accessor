@@ -72,7 +72,7 @@ class AutoGenerateAccessor implements ListenerInterface
         }
     }
 
-    private function genProxyFile()
+    private function genProxyFile(): void
     {
         $config = $this->container->get(ConfigInterface::class);
         $this->removeProxies($config->get('php-accessor.proxy_root_directory'));
@@ -95,10 +95,11 @@ class AutoGenerateAccessor implements ListenerInterface
         foreach ($runner->getGeneratedFiles() as $generatedFile) {
             $log->log($logLevel, '[php-accessor]: ' . $generatedFile);
         }
+
         exit;
     }
 
-    private function removeProxies($dir)
+    private function removeProxies($dir): void
     {
         $filesystem = new Filesystem();
         if (! $filesystem->exists($dir)) {
