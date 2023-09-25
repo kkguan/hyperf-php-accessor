@@ -10,4 +10,5 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
 #[Attribute(Attribute::TARGET_CLASS)]
 class HyperfData extends AbstractAnnotation
 {
+    public function __construct() {}
 }
