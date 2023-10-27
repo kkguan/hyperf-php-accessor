@@ -27,8 +27,7 @@ class AutoGenerateAccessor implements ListenerInterface
 {
     public function __construct(
         private ContainerInterface $container,
-    ) {
-    }
+    ) {}
 
     public function listen(): array
     {

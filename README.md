@@ -11,15 +11,15 @@ php bin/hyperf.php vendor:publish free2one/hyperf-php-accessor
 项目`composer.json` 文件中配置以下信息信息
 ```json
 {
-  "scripts":{
-    "php-accessor": "@php vendor/bin/php-accessor generate"
-  }
+    "scripts":{
+        "php-accessor": "@php vendor/bin/php-accessor generate"
+    }
 }
 ```
 
 
 ### 通过`#[HyperfData]`注解原始类
-除了PHP Accessor原有的注解外,需要额外使用该注解来标识其可被Hyperf<a href="https://hyperf.wiki/3.0/#/zh-cn/annotation?id=%e8%87%aa%e5%ae%9a%e4%b9%89%e6%b3%a8%e8%a7%a3">收集</a>.
+除了[PHP Accessor](https://github.com/kkguan/php-accessor)原有的注解外, 需要额外使用该注解来标识其可被Hyperf<a href="https://hyperf.wiki/3.0/#/zh-cn/annotation?id=%e8%87%aa%e5%ae%9a%e4%b9%89%e6%b3%a8%e8%a7%a3">收集</a>.
 ```php
 <?php
 namespace App;
@@ -75,8 +75,10 @@ return [
 
 ## 相关资源
 
-#### <a href="https://github.com/kkguan/php-accessor">PHP Accessor</a>: 生成类访问器（Getter & Setter）
-#### <a href="https://github.com/kkguan/php-accessor-idea-plugin">PHP Accessor IDEA Plugin</a>: Phpstorm辅助插件,文件保存时自动生成访问器.支持访问器的跳转,代码提示,查找及类字段重构等.
+#### <a href="https://github.com/kkguan/php-accessor">PHP Accessor</a>: 访问器生成器
 
+#### <a href="https://github.com/kkguan/php-accessor-idea-plugin">PHP Accessor IDEA Plugin</a>: Phpstorm插件,文件保存时自动生成访问器.支持访问器的跳转,代码提示,查找及类字段重构等.
 
+#### <a href="https://github.com/kkguan/hyperf-php-accessor">Hyperf PHP Accessor</a>: Hyperf框架SDK
 
+#### <a href="https://github.com/kkguan/laravel-php-accessor">Laravel PHP Accessor</a>: Laravel框架SDK
