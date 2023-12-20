@@ -79,9 +79,7 @@ class AutoGenerateAccessor implements ListenerInterface
         if ($config->get('php-accessor.scan_cacheable') === true && is_dir($proxyDir)) {
             $finder = new Finder();
             $finder->files()->name('*.php')->in($proxyDir);
-            if ($finder->count() > 0) {
-                return;
-            }
+            $finder->count() > 0 && exit;
         }
 
         $this->removeProxies($config->get('php-accessor.proxy_root_directory'));
