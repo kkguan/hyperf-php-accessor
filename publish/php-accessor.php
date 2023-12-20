@@ -10,4 +10,5 @@ return [
     'gen_meta' => $genMeta,
     'gen_proxy' => 'yes',
     'log_level' => \Psr\Log\LogLevel::INFO,
+    'scan_cacheable' => false,
 ];
