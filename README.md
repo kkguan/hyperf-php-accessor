@@ -18,16 +18,13 @@ php bin/hyperf.php vendor:publish free2one/hyperf-php-accessor
 ```
 
 
-### 通过`#[HyperfData]`注解原始类
-除了[PHP Accessor](https://github.com/kkguan/php-accessor)原有的注解外, 需要额外使用该注解来标识其可被Hyperf<a href="https://hyperf.wiki/3.0/#/zh-cn/annotation?id=%e8%87%aa%e5%ae%9a%e4%b9%89%e6%b3%a8%e8%a7%a3">收集</a>.
+### 通过`#[Data]`注解原始类
 ```php
 <?php
 namespace App;
 
-use Hyperf\PhpAccessor\Annotation\HyperfData;
 use PhpAccessor\Attribute\Data;
 
-#[HyperfData]
 #[Data]
 class Entity
 {
@@ -36,6 +33,14 @@ class Entity
     private string $name;
 }
 ```
+更多注解使用说明详见[PHP Accessor](https://github.com/kkguan/php-accessor).
+
+### PHPStorm插件
+<img src="https://plugins.jetbrains.com/files/21172/screenshot_78b22757-36e3-4a90-a405-44acb21c3e10">
+
+建议配合 <a href="https://github.com/kkguan/php-accessor-idea-plugin">PHP Accessor IDEA Plugin</a> 使用, 该插件支持访问器的跳转,代码提示,查找及类字段重构等.
+
+
 
 
 注意事项
@@ -59,17 +64,23 @@ Swoole\Runtime::enableCoroutine(SWOOLE_HOOK_ALL^SWOOLE_HOOK_PROC);
 
 ```php
 <?php
+
 declare(strict_types=1);
 
-$appEnv = env('APP_ENV', 'dev');
-$genMeta = $appEnv == 'dev' ? 'yes' : 'no';
+use Psr\Log\LogLevel;
 
 return [
-    'proxy_root_directory' => BASE_PATH . DIRECTORY_SEPARATOR . '.php-accessor',
-    'gen_meta' => $genMeta,
+    'scan_directories' => [
+        'app',
+    ],
+    'proxy_root_directory' => '.php-accessor',
+    'gen_meta' => env('APP_ENV', 'dev') == 'dev' ? 'yes' : 'no',
     'gen_proxy' => 'yes',
+    'log_level' => LogLevel::DEBUG,
+    'scan_cacheable' => false,
+    'max_concurrent_processes' => 2,  // 最大并行进程数
+    'max_files_per_process' => 200,   // 进程内最大处理文件数
 ];
-
 ```
 
 
