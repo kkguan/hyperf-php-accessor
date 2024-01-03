@@ -12,6 +12,7 @@ class ConfigProvider
             'dependencies' => [
             ],
             'commands' => [
+                Command\AccessorConfigCommand::class,
             ],
             'annotations' => [
                 'scan' => [
