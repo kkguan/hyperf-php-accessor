@@ -6,9 +6,9 @@ namespace Hyperf\PhpAccessor;
 
 use ArrayIterator;
 use Composer\Autoload\ClassLoader;
+use Exception;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Di\Exception\Exception;
 use Hyperf\Event\Annotation\Listener;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
@@ -22,21 +22,17 @@ use Symfony\Component\Finder\Finder;
 class AutoGenerateAccessor implements ListenerInterface
 {
     private array $config = [
+        'is_dev_mode' => true,
         'scan_directories' => [
             'app',
         ],
         'proxy_root_directory' => '.php-accessor',
-        'gen_meta' => 'yes',
-        'gen_proxy' => 'yes',
-        'log_level' => LogLevel::INFO,
-        'scan_cacheable' => false,
+        'log_level' => LogLevel::DEBUG,
         'max_concurrent_processes' => 2,
         'max_files_per_process' => 200,
     ];
 
     private string $proxyRootDir;
-
-    private string $proxyDir;
 
     public function __construct(
         private ContainerInterface $container,
@@ -54,37 +50,35 @@ class AutoGenerateAccessor implements ListenerInterface
         $config = $this->container->get(ConfigInterface::class);
         $this->config = array_merge($this->config, $config->get('php-accessor', []));
         $this->proxyRootDir = BASE_PATH . '/' . $this->config['proxy_root_directory'];
-        $this->proxyDir = $this->proxyRootDir . '/proxy';
+        $proxyDir = $this->proxyRootDir . '/proxy';
 
-        $this->genProxyFile();
+        try {
+            if ($this->config['is_dev_mode'] || ! is_dir($proxyDir)) {
+                $this->genProxyFile();
+            }
 
-        if (! is_dir($this->proxyDir)) {
-            return;
+            $finder = new Finder();
+            $finder->files()->name('*.php')->in($proxyDir);
+            $classLoader = new ClassLoader();
+            $classMap = [];
+            foreach ($finder->getIterator() as $value) {
+                $classname = str_replace('@', '\\', $value->getBasename('.' . $value->getExtension()));
+                $classname = substr($classname, 1);
+                $classMap[$classname] = $value->getRealPath();
+            }
+            if (empty($classMap)) {
+                return;
+            }
+            $classLoader->addClassMap($classMap);
+            $classLoader->register(true);
+        } catch (Exception $e) {
+            $log = $this->container->get(StdoutLoggerInterface::class);
+            $log->error('[php-accessor]: Failure to generate proxies.(' . $e->getMessage() . ')');
         }
-
-        $finder = new Finder();
-        $finder->files()->name('*.php')->in($this->proxyDir);
-        $classLoader = new ClassLoader();
-        $classMap = [];
-        foreach ($finder->getIterator() as $value) {
-            $classname = str_replace('@', '\\', $value->getBasename('.' . $value->getExtension()));
-            $classname = substr($classname, 1);
-            $classMap[$classname] = $value->getRealPath();
-        }
-        $classLoader->addClassMap($classMap);
-        $classLoader->register(true);
     }
 
     private function genProxyFile(): void
     {
-        // 如果开启了缓存，且代理文件已经存在，则不再生成
-        if ($this->config['scan_cacheable'] === true && is_dir($this->proxyDir)) {
-            $finder = new Finder();
-            $finder->files()->name('*.php')->in($this->proxyDir);
-            if ($finder->count() > 0) {
-                return;
-            }
-        }
         // 清理代理文件
         $this->removeProxies();
         // 生成代理文件
@@ -136,8 +130,8 @@ class AutoGenerateAccessor implements ListenerInterface
         $runner = new Runner(
             finder: $finder,
             dir: $this->proxyRootDir,
-            genMeta: $this->config['gen_meta'] == 'yes',
-            genProxy: $this->config['gen_proxy'] == 'yes',
+            genMeta: $this->config['is_dev_mode'] == true,
+            genProxy: true,
         );
         $runner->generate();
         $log = $this->container->get(StdoutLoggerInterface::class);
