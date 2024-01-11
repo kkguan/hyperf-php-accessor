@@ -19,6 +19,9 @@ class ConfigProvider
                     'paths' => [
                         __DIR__,
                     ],
+                    'class_map' => [
+                        \PhpAccessor\Attribute\Data::class => BASE_PATH . '/vendor/free2one/hyperf-php-accessor/src/Annotation/Data.php',
+                    ],
                 ],
             ],
             'publish' => [

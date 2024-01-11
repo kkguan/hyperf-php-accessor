@@ -47,9 +47,6 @@ class Entity
 * true: 每次启动时重新生成访问器代理类.
 * false: 启动时检测代理目录是否存在,存在则不再重新生成.
 
-### `scan_directories`
-需要扫描的目录,默认为`app`目录.
-
 ### `proxy_root_directory`
 访问器代理类存放目录,默认为`.php-accessor`目录.
 
@@ -77,9 +74,6 @@ use Psr\Log\LogLevel;
 
 return [
     'is_dev_mode' => true, // 是否开启开发模式,本地开发时建议开启,否则无法配合ide插件使用
-    'scan_directories' => [
-        'app',
-    ],
     'proxy_root_directory' => '.php-accessor',
     'log_level' => LogLevel::DEBUG,
     'max_concurrent_processes' => 2,  

@@ -9,12 +9,16 @@ use Composer\Autoload\ClassLoader;
 use Exception;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Event\Annotation\Listener;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
+use PhpAccessor\Attribute\Data;
 use PhpAccessor\Runner;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LogLevel;
+use ReflectionClass;
+use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -23,9 +27,6 @@ class AutoGenerateAccessor implements ListenerInterface
 {
     private array $config = [
         'is_dev_mode' => true,
-        'scan_directories' => [
-            'app',
-        ],
         'proxy_root_directory' => '.php-accessor',
         'log_level' => LogLevel::DEBUG,
         'max_concurrent_processes' => 2,
@@ -69,6 +70,7 @@ class AutoGenerateAccessor implements ListenerInterface
             if (empty($classMap)) {
                 return;
             }
+
             $classLoader->addClassMap($classMap);
             $classLoader->register(true);
         } catch (Exception $e) {
@@ -81,45 +83,45 @@ class AutoGenerateAccessor implements ListenerInterface
     {
         // 清理代理文件
         $this->removeProxies();
-        // 生成代理文件
-        foreach ($this->config['scan_directories'] as $scanDirectory) {
-            $finder = new Finder();
-            $finder->files()->name('*.php')->in(BASE_PATH . '/' . $scanDirectory);
-            $index = 0;
-            foreach ($finder->getIterator() as $value) {
-                $files[$index][] = $value;
-                if (count($files[$index]) >= $this->config['max_files_per_process']) {
-                    ++$index;
+
+        $classes = AnnotationCollector::getClassesByAnnotation(Data::class);
+        if (empty($classes)) {
+            return;
+        }
+
+        $classes = array_chunk($classes, $this->config['max_files_per_process'], true);
+        // 使用子进程生成代理文件
+        $gen = true;
+        while ($gen) {
+            $runProcessNum = 0;
+            for ($i = 0; $i < $this->config['max_concurrent_processes']; ++$i) {
+                $chunk = array_pop($classes);
+                if (empty($chunk)) {
+                    $gen = false;
+                    break;
                 }
+
+                $pid = pcntl_fork();
+                if ($pid == -1) {
+                    throw new Exception('The process fork failed');
+                }
+
+                if ($pid == 0) {
+                    $files = [];
+                    foreach ($chunk as $class => $annotation) {
+                        $ref = new ReflectionClass($class);
+                        $files[] = new SplFileInfo($ref->getFileName());
+                    }
+                    ! empty($files) && $this->gen($files);
+                    exit;
+                }
+
+                ++$runProcessNum;
             }
-            // 使用子进程生成代理文件
-            $gen = true;
-            while ($gen) {
-                $runProcessNum = 0;
-                for ($i = 0; $i < $this->config['max_concurrent_processes']; ++$i) {
-                    $chunk = array_pop($files);
-                    if (empty($chunk)) {
-                        $gen = false;
-                        break;
-                    }
 
-                    $pid = pcntl_fork();
-                    if ($pid == -1) {
-                        throw new Exception('The process fork failed');
-                    }
-
-                    if ($pid == 0) {
-                        $this->gen($chunk);
-                        exit;
-                    }
-
-                    ++$runProcessNum;
-                }
-
-                // 等待所有子进程结束
-                for ($i = 0; $i < $runProcessNum; ++$i) {
-                    pcntl_wait($status);
-                }
+            // 等待所有子进程结束
+            for ($i = 0; $i < $runProcessNum; ++$i) {
+                pcntl_wait($status);
             }
         }
     }

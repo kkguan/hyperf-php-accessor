@@ -13,5 +13,8 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
 #[Attribute(Attribute::TARGET_CLASS)]
 class HyperfData extends AbstractAnnotation
 {
+    /**
+     * @deprecated since 1.0.0
+     */
     public function __construct() {}
 }
